@@ -1,65 +1,107 @@
-import Image from "next/image";
+import { fetchAPI } from "@/services/wordpress";
+import ReviewCard from "@/components/reviews/ReviewCard";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Zap } from "lucide-react";
+import Link from "next/link"; // <--- IMPORTANTE: Adicionado
 
-export default function Home() {
+const HOME_QUERY = `
+  query HomeData {
+    reviews(first: 6, where: { orderby: { field: DATE, order: DESC } }) {
+      nodes {
+        id
+        title
+        slug
+        date
+        featuredImage {
+          node {
+            sourceUrl
+          }
+        }
+        camposDoReview {
+          notaDoReview
+        }
+      }
+    }
+  }
+`;
+
+export default async function Home() {
+  const data = await fetchAPI(HOME_QUERY);
+  const reviews = data?.reviews?.nodes || [];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-background pb-20">
+      {/* Hero Section Dark */}
+      <section className="relative border-b border-border py-24 px-6 mb-12 overflow-hidden">
+        
+        {/* Efeito de brilho de fundo roxo bem sutil */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="relative container mx-auto text-center z-10">
+          {/* Badge Novidade */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-card text-xs font-bold text-accent mb-6 border border-border">
+            <Zap className="w-3 h-3 fill-accent" />
+            Novidade: Blog 2.0 no Ar
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-white">
+            Tecnologia descomplicada <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              para o seu dia a dia.
+            </span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            Reviews honestos, guias práticos e as últimas novidades sobre IA e Games.
+            Focado no que realmente importa para você.
           </p>
+
+          <div className="flex justify-center gap-4">
+            {/* Botão Ver Reviews (Com Link) */}
+            <Link href="/category/reviews"> 
+              <Button size="lg" className="bg-primary hover:bg-secondary text-white font-semibold shadow-[0_0_20px_rgba(124,58,237,0.3)]">
+                Ver Reviews
+              </Button>
+            </Link>
+
+            {/* Botão Sobre Nós (Com Link) - CORRIGIDO AQUI */}
+            <Link href="/sobre">
+              <Button size="lg" variant="outline" className="border-border bg-card text-white hover:bg-border hover:text-accent">
+                Sobre Nós
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Grid de Reviews */}
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+            Últimos Reviews
+          </h2>
+          
+          <Link href="/category/reviews">
+            <Button variant="ghost" className="text-accent hover:text-accent hover:bg-card gap-2 group">
+              Ver todos <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </div>
-      </main>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {reviews.length > 0 ? (
+            reviews.map((review: any) => (
+              <ReviewCard key={review.id} post={review} />
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center rounded-xl border border-dashed border-border bg-card/50">
+              <p className="text-muted-foreground">
+                Nenhum review encontrado. Comece a publicar no WordPress! 🚀
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
