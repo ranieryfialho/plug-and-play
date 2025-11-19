@@ -24,7 +24,6 @@ export default function AdUnit({ slotId, format = "auto", style, className = "h-
   const isDev = process.env.NODE_ENV === "development";
 
   return (
-    // MUDANÇA: Removi 'flex' e 'justify-center'. Adicionei 'block' e 'w-full' explícito.
     <div className={`block w-full my-8 overflow-hidden rounded-xl ${className}`} style={style}>
       {/* Simulação Visual (Localhost) */}
       {isDev && (
@@ -38,7 +37,7 @@ export default function AdUnit({ slotId, format = "auto", style, className = "h-
       <ins
         className={`adsbygoogle ${isDev ? "hidden" : "block"}`}
         style={{ display: "block", width: "100%", height: "100%" }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+        data-ad-client="ca-pub-6203949560211327" 
         data-ad-slot={slotId}
         data-ad-format={format}
         data-full-width-responsive="true"
