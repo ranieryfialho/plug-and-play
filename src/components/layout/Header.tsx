@@ -9,10 +9,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 
+// --- MENU ---
 const NAVIGATION = [
-  { name: "Reviews", href: "/category/reviews" },
-  { name: "Games", href: "/category/games" },
-  { name: "Inteligência Artificial", href: "/category/inteligencia-artificial" },
+  { name: "Reviews", href: "/reviews" },
+  { name: "Notícias", href: "/category/noticias" },
+  { name: "Artigos", href: "/category/artigos" },
   { name: "Tutoriais", href: "/category/tutoriais" },
 ];
 
@@ -22,7 +23,6 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
-  // Função que executa a busca
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -34,6 +34,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
+        
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
@@ -52,7 +53,7 @@ export default function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-accent"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-accent hover:underline decoration-2 underline-offset-4 decoration-primary"
             >
               {item.name}
             </Link>
@@ -61,7 +62,6 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          
           <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-accent hover:bg-card">
@@ -72,7 +72,7 @@ export default function Header() {
               <DialogTitle className="text-white">Buscar no Blog</DialogTitle>
               <form onSubmit={handleSearch} className="flex gap-2 mt-4">
                 <Input 
-                  placeholder="O que você procura?" 
+                  placeholder="O que você procura? (ex: iPhone)" 
                   className="bg-background border-border text-white placeholder:text-muted-foreground"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -84,7 +84,6 @@ export default function Header() {
             </DialogContent>
           </Dialog>
 
-          {/* Mobile Menu */}
           <div className="md:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
