@@ -1,6 +1,6 @@
 import { fetchAPI } from "@/services/wordpress";
 import Link from "next/link";
-import { Zap, Gamepad2, Smartphone, Newspaper } from "lucide-react";
+import { ArrowRight, Zap, Gamepad2, Smartphone, Newspaper, BookOpen } from "lucide-react";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import ProductCard from "@/components/reviews/ProductCard";
 import HorizontalCard from "@/components/reviews/HorizontalCard";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
-import HeroTitle from "@/components/ui/hero-title"; // <--- IMPORTADO AQUI
+import HeroTitle from "@/components/ui/hero-title";
 
 // Função auxiliar para resumo
 function getExcerpt(html: string, limit = 150) {
@@ -19,53 +19,38 @@ function getExcerpt(html: string, limit = 150) {
   return text.slice(0, limit) + (text.length > limit ? "..." : "");
 }
 
-// --- QUERY HÍBRIDA ---
+// Função para determinar o Link correto (Review ou Artigo)
+function getPostLink(post: any) {
+  // Se tiver camposDoReview, assumimos que é um Review. Caso contrário, é Artigo.
+  return post.camposDoReview ? `/reviews/${post.slug}` : `/artigos/${post.slug}`;
+}
+
+// Função para determinar o Label (Badge)
+function getPostLabel(post: any) {
+  if (post.categories?.nodes?.length > 0) {
+    return post.categories.nodes[0].name;
+  }
+  return post.camposDoReview ? "Review" : "Notícia";
+}
+
 const PORTAL_QUERY = `
   query PortalData {
-    # 1. Reviews (Produtos, Análises)
-    reviews(first: 50, where: { orderby: { field: DATE, order: DESC } }) {
+    # 1. Busca Reviews Recentes
+    reviews(first: 10, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
-        id
-        title
-        slug
-        date
-        content
-        featuredImage {
-          node {
-            sourceUrl
-          }
-        }
-        categories {
-          nodes {
-            name
-            slug
-          }
-        }
-        camposDoReview {
-          notaDoReview
-          precoAtual
-        }
+        id, title, slug, date, content
+        featuredImage { node { sourceUrl } }
+        categories { nodes { name, slug } }
+        camposDoReview { notaDoReview, precoAtual }
       }
     }
 
-    # 2. Posts (Notícias, Artigos Gerais)
-    posts(first: 5, where: { orderby: { field: DATE, order: DESC } }) {
+    # 2. Busca Notícias Recentes
+    posts(first: 10, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
-        id
-        title
-        slug
-        date
-        featuredImage {
-          node {
-            sourceUrl
-          }
-        }
-        categories {
-          nodes {
-            name
-            slug
-          }
-        }
+        id, title, slug, date, content
+        featuredImage { node { sourceUrl } }
+        categories { nodes { name, slug } }
       }
     }
   }
@@ -83,44 +68,45 @@ export default async function Home() {
     console.error("Erro crítico na Home:", error);
   }
 
-  // --- FILTRAGEM DE REVIEWS (Javascript) ---
-  
-  // Ofertas
+  // --- LÓGICA DE MISTURA (MERGE) ---
+  // 1. Junta tudo numa lista só
+  const allContent = [...reviews, ...articles];
+
+  // 2. Ordena por data (Mais novo primeiro)
+  allContent.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // 3. Distribuição para o Hero
+  const heroPost = allContent[0]; // O mais novo de todos (seja review ou notícia)
+  const heroSidePosts = allContent.slice(1, 5); // Os próximos 4
+
+  const heroExcerpt = heroPost ? getExcerpt(heroPost.content, 120) : "";
+  const heroLink = heroPost ? getPostLink(heroPost) : "#";
+  const heroLabel = heroPost ? getPostLabel(heroPost) : "Destaque";
+
+  // --- FILTRAGEM PARA OUTRAS SEÇÕES ---
   const ofertasPosts = reviews.filter((post: any) => 
     post.categories?.nodes?.some((cat: any) => cat.slug === 'ofertas')
   ).slice(0, 4);
 
-  // Games
   const gamesPosts = reviews.filter((post: any) => 
     post.categories?.nodes?.some((cat: any) => cat.slug === 'games')
   ).slice(0, 5);
 
-  // Celulares
   const celularesPosts = reviews.filter((post: any) => 
     post.categories?.nodes?.some((cat: any) => cat.slug === 'celulares' || cat.slug === 'smartphones')
   ).slice(0, 4);
 
-  // Destaques Gerais
-  const generalPosts = reviews.filter((post: any) => 
-    !post.categories?.nodes?.some((cat: any) => cat.slug === 'ofertas')
-  );
-
-  // Hero Logic
-  const heroPost = generalPosts[0]; 
-  const heroSidePosts = generalPosts.slice(1, 5);
-  const heroExcerpt = heroPost ? getExcerpt(heroPost.content, 120) : "";
+  // Lista da Sidebar (Notícias puras)
+  const sidebarNews = articles.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background pb-20">
       
       {/* --- HERO SECTION --- */}
       <section className="relative border-b border-border py-32 px-6 mb-12 overflow-hidden">
-        {/* Efeito de fundo roxo (Glow) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="relative container mx-auto text-center z-10">
-          
-          {/* Badge Novidade */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 backdrop-blur-sm text-xs font-bold text-white mb-8 border border-white/10 shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -129,12 +115,11 @@ export default async function Home() {
             Tech Descomplicada
           </div>
           
-          {/* TÍTULO ANIMADO (Aqui está ele de volta!) */}
           <HeroTitle />
           
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Reviews honestos e guias práticos. Focado no que realmente importa 
-            para o seu dia a dia tecnológico.
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed">
+            Muito além de reviews. O seu hub definitivo sobre <strong>Hardware, Inteligência Artificial e Games</strong>. 
+            Notícias, tutoriais e análises aprofundadas para quem respira tecnologia.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -142,21 +127,21 @@ export default async function Home() {
                <Link href="/category/reviews">Explorar Artigos</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-white/10 bg-white/5 text-white hover:bg-white/10 h-12 px-8 rounded-full backdrop-blur-sm cursor-pointer">
-               <Link href="/sobre">Conheça a equipe</Link>
+               <Link href="/sobre">Quem somos</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* --- SEÇÃO DESTAQUES (Hero Post + Lista Lateral) --- */}
+      {/* --- SEÇÃO DESTAQUES (MISTURADA) --- */}
       <div className="container mx-auto px-6 mb-16">
          <SectionHeader title="✨ Destaques da Semana" />
          
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Destaque Principal */}
+            {/* Destaque Principal (O mais recente de todos) */}
             <div className="lg:col-span-8 relative group">
               {heroPost ? (
-                <Link href={`/reviews/${heroPost.slug}`} className="block h-[500px] relative rounded-2xl overflow-hidden border border-border">
+                <Link href={heroLink} className="block h-[500px] relative rounded-2xl overflow-hidden border border-border">
                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
                    {heroPost.featuredImage?.node?.sourceUrl ? (
                      <img 
@@ -169,7 +154,7 @@ export default async function Home() {
                    )}
                    <div className="absolute bottom-0 left-0 p-8 z-20 max-w-2xl">
                       <span className="inline-block px-3 py-1 mb-3 text-xs font-bold tracking-widest text-white uppercase bg-primary rounded-full shadow-lg">
-                        Destaque
+                        {heroLabel}
                       </span>
                       <h2 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3 drop-shadow-lg">
                         {heroPost.title}
@@ -186,16 +171,38 @@ export default async function Home() {
               )}
             </div>
 
-            {/* Lista Lateral (Reviews Recentes) */}
+            {/* Lista Lateral (Os próximos 4 mais recentes) */}
             <div className="lg:col-span-4 flex flex-col gap-4">
               <div className="bg-card/50 p-4 rounded-xl border border-border h-full">
                 <h3 className="font-bold text-lg text-white flex items-center gap-2 mb-4 pl-2 border-l-4 border-accent">
-                  Análises Recentes
+                  Mais Recentes
                 </h3>
                 <div className="flex flex-col gap-5">
                   {heroSidePosts.length > 0 ? (
                     heroSidePosts.map((post: any) => (
-                      <HorizontalCard key={post.id} post={post} />
+                      <Link key={post.id} href={getPostLink(post)} className="flex gap-3 group">
+                        <div className="relative w-24 h-20 shrink-0 rounded-lg overflow-hidden border border-border bg-secondary/50">
+                            {post.featuredImage?.node?.sourceUrl ? (
+                            <Image
+                                src={post.featuredImage.node.sourceUrl}
+                                alt={post.title}
+                                fill
+                                className="object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                            ) : <div className="w-full h-full flex items-center justify-center"><Zap className="w-4 h-4 text-muted-foreground"/></div>}
+                        </div>
+                        <div className="flex flex-col justify-center py-1">
+                            <span className="text-[10px] text-primary font-bold mb-1 uppercase tracking-wider">
+                                {getPostLabel(post)}
+                            </span>
+                            <h3 className="font-semibold text-sm text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-1">
+                                {post.title}
+                            </h3>
+                            <span className="text-[10px] text-muted-foreground">
+                                {formatDistanceToNow(new Date(post.date), { addSuffix: true, locale: ptBR })}
+                            </span>
+                        </div>
+                      </Link>
                     ))
                   ) : (
                     <p className="text-sm text-muted-foreground p-4">Sem posts recentes.</p>
@@ -206,7 +213,7 @@ export default async function Home() {
           </div>
       </div>
 
-      {/* --- ANÚNCIO BILLBOARD --- */}
+      {/* --- ANÚNCIO --- */}
       <div className="container mx-auto px-6 my-12">
          <AdUnit slotId="home-top" className="w-full h-[250px]" />
       </div>
@@ -227,10 +234,9 @@ export default async function Home() {
 
       <div className="container mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
         
-        {/* --- COLUNA PRINCIPAL (Esquerda) --- */}
+        {/* --- COLUNA PRINCIPAL --- */}
         <div className="lg:col-span-8 space-y-16">
           
-          {/* Seção Celulares */}
           <section>
              <SectionHeader title="📱 Celulares & Tablets" href="/category/celulares" color="bg-blue-500" />
              {celularesPosts.length > 0 ? (
@@ -243,15 +249,12 @@ export default async function Home() {
                <div className="p-6 border border-dashed border-border rounded-xl text-center text-muted-foreground bg-card/30">
                  <Smartphone className="w-8 h-8 mx-auto mb-2 opacity-50" />
                  <p>Nenhum review de celular encontrado.</p>
-                 <p className="text-xs mt-1">Verifique a categoria 'celulares' no WordPress.</p>
                </div>
              )}
           </section>
 
-          {/* Anúncio In-Feed */}
           <AdUnit slotId="home-mid" className="w-full h-[250px]" />
 
-          {/* Seção Games */}
           <section>
              <SectionHeader title="🎮 Mundo Gamer" href="/category/games" color="bg-purple-500" />
              {gamesPosts.length > 0 ? (
@@ -264,22 +267,20 @@ export default async function Home() {
                 <p className="text-muted-foreground text-sm">Nenhum review de game encontrado.</p>
              )}
           </section>
-
         </div>
 
-        {/* --- SIDEBAR (Direita - Mix) --- */}
+        {/* --- SIDEBAR --- */}
         <div className="lg:col-span-4 space-y-12">
            
-           {/* Widget: ÚLTIMAS NOTÍCIAS (Posts Padrão) */}
+           {/* Widget: Notícias Puras */}
            <div className="p-6 rounded-xl border border-border bg-card/50">
               <h3 className="font-bold text-white mb-4 flex items-center gap-2">
                 <Newspaper className="w-5 h-5 text-green-500" />
                 Últimas Notícias
               </h3>
-              
               <div className="flex flex-col gap-4">
-                {articles.length > 0 ? (
-                  articles.map((item: any) => (
+                {sidebarNews.length > 0 ? (
+                  sidebarNews.map((item: any) => (
                     <Link key={item.id} href={`/artigos/${item.slug}`} className="flex gap-3 group border-b border-border/50 pb-3 last:border-0 last:pb-0">
                        <div>
                           <span className="text-[10px] text-primary font-bold uppercase tracking-wider">
@@ -300,7 +301,6 @@ export default async function Home() {
               </div>
            </div>
 
-           {/* Widget Sobre */}
            <div className="p-6 rounded-xl border border-border bg-card">
               <h3 className="font-bold text-white mb-2">Plug & Play</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -311,19 +311,15 @@ export default async function Home() {
               </Button>
            </div>
 
-           {/* Anúncio Lateral */}
            <div>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground block text-center mb-2">Publicidade</span>
               <AdUnit slotId="home-sidebar" format="rectangle" className="w-full h-[600px]" />
            </div>
 
-           {/* Newsletter */}
            <div className="p-6 rounded-xl bg-gradient-to-br from-primary/20 to-purple-900/20 border border-primary/20">
               <h3 className="font-bold text-white mb-2">Receba novidades</h3>
               <input type="email" placeholder="Seu melhor email" className="w-full p-2 rounded bg-background border border-border text-sm mb-2 text-white placeholder:text-muted-foreground" />
               <Button className="w-full bg-primary text-white">Inscrever-se</Button>
            </div>
-
         </div>
       </div>
     </div>
