@@ -12,7 +12,7 @@ import { useState } from "react";
 const NAVIGATION = [
   { name: "Reviews", href: "/category/reviews" },
   { name: "Games", href: "/category/games" },
-  { name: "IA", href: "/category/inteligencia-artificial" },
+  { name: "Inteligência Artificial", href: "/category/inteligencia-artificial" },
   { name: "Tutoriais", href: "/category/tutoriais" },
 ];
 
