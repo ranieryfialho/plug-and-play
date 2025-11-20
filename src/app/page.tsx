@@ -11,19 +11,14 @@ import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
 import HeroTitle from "@/components/ui/hero-title";
-
-function getExcerpt(html: string, limit = 150) {
-  if (!html) return "";
-  const text = html.replace(/<[^>]*>?/gm, ''); 
-  return text.slice(0, limit) + (text.length > limit ? "..." : "");
-}
+import HeroCarousel from "@/components/home/HeroCarousel";
 
 const PORTAL_QUERY = `
   query PortalData {
-    # 1. Reviews
+    # 1. Reviews (Trazemos bastante para alimentar as seções)
     reviews(first: 50, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
-        id, title, slug, date, content
+        id, title, slug, date, content, excerpt
         featuredImage { node { sourceUrl } }
         categories { nodes { name, slug } }
         camposDoReview { notaDoReview, precoAtual }
@@ -33,7 +28,7 @@ const PORTAL_QUERY = `
     # 2. Posts (Notícias)
     posts(first: 50, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
-        id, title, slug, date, content
+        id, title, slug, date, content, excerpt
         featuredImage { node { sourceUrl } }
         categories { nodes { name, slug } }
       }
@@ -57,7 +52,8 @@ export default async function Home() {
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  
+  const carouselPosts = allContent.slice(0, 5);
+
   const ofertasPosts = reviews.filter((post: any) => 
     post.categories?.nodes?.some((cat: any) => cat.slug === 'ofertas')
   ).slice(0, 4);
@@ -70,15 +66,7 @@ export default async function Home() {
     post.categories?.nodes?.some((cat: any) => cat.slug === 'celulares' || cat.slug === 'smartphones')
   ).slice(0, 4);
 
-  const generalPosts = allContent.filter((post: any) => 
-    !post.categories?.nodes?.some((cat: any) => cat.slug === 'ofertas')
-  );
-
-  const heroPost = generalPosts[0]; 
-  const heroSidePosts = generalPosts.slice(1, 5);
-  const heroExcerpt = heroPost ? getExcerpt(heroPost.content, 120) : "";
-
-  const getPostLink = (post: any) => post.camposDoReview ? `/reviews/${post.slug}` : `/artigos/${post.slug}`;
+  const sidebarNews = articles.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -115,57 +103,7 @@ export default async function Home() {
 
       <div className="container mx-auto px-6 mb-16">
          <SectionHeader title="✨ Destaques da Semana" />
-         
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 relative group">
-              {heroPost ? (
-                <Link href={getPostLink(heroPost)} className="block h-[500px] relative rounded-2xl overflow-hidden border border-border">
-                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
-                   {heroPost.featuredImage?.node?.sourceUrl ? (
-                     <img 
-                        src={heroPost.featuredImage.node.sourceUrl} 
-                        alt={heroPost.title} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                     />
-                   ) : (
-                     <div className="w-full h-full bg-secondary/20 flex items-center justify-center text-muted-foreground">Sem Imagem</div>
-                   )}
-                   <div className="absolute bottom-0 left-0 p-8 z-20 max-w-2xl">
-                      <span className="inline-block px-3 py-1 mb-3 text-xs font-bold tracking-widest text-white uppercase bg-primary rounded-full shadow-lg">
-                        {heroPost.categories?.nodes?.[0]?.name || "Destaque"}
-                      </span>
-                      <h2 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3 drop-shadow-lg">
-                        {heroPost.title}
-                      </h2>
-                      <p className="text-gray-200 line-clamp-2 text-lg font-medium drop-shadow-md">
-                        {heroExcerpt}
-                      </p>
-                   </div>
-                </Link>
-              ) : (
-                <div className="h-[500px] rounded-2xl border border-dashed border-border flex items-center justify-center text-muted-foreground">
-                  Nenhum destaque encontrado.
-                </div>
-              )}
-            </div>
-
-            <div className="lg:col-span-4 flex flex-col gap-4">
-              <div className="bg-card/50 p-4 rounded-xl border border-border h-full">
-                <h3 className="font-bold text-lg text-white flex items-center gap-2 mb-4 pl-2 border-l-4 border-accent">
-                  Mais Recentes
-                </h3>
-                <div className="flex flex-col gap-5">
-                  {heroSidePosts.length > 0 ? (
-                    heroSidePosts.map((post: any) => (
-                      <HorizontalCard key={post.id} post={post} />
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground p-4">Sem posts recentes.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+         <HeroCarousel posts={carouselPosts} />
       </div>
 
       <div className="container mx-auto px-6 my-12">
@@ -201,6 +139,7 @@ export default async function Home() {
                <div className="p-6 border border-dashed border-border rounded-xl text-center text-muted-foreground bg-card/30">
                  <Smartphone className="w-8 h-8 mx-auto mb-2 opacity-50" />
                  <p>Nenhum review de celular encontrado.</p>
+                 <p className="text-xs mt-1">Verifique a categoria 'celulares' no WordPress.</p>
                </div>
              )}
           </section>
@@ -230,8 +169,8 @@ export default async function Home() {
                 Últimas Notícias
               </h3>
               <div className="flex flex-col gap-4">
-                {articles.length > 0 ? (
-                  articles.slice(0, 5).map((item: any) => (
+                {sidebarNews.length > 0 ? (
+                  sidebarNews.map((item: any) => (
                     <Link key={item.id} href={`/artigos/${item.slug}`} className="flex gap-3 group border-b border-border/50 pb-3 last:border-0 last:pb-0">
                        <div>
                           <span className="text-[10px] text-primary font-bold uppercase tracking-wider">
@@ -263,6 +202,7 @@ export default async function Home() {
            </div>
 
            <div>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground block text-center mb-2">Publicidade</span>
               <AdUnit slotId="home-sidebar" format="rectangle" className="w-full h-[600px]" />
            </div>
 
@@ -271,6 +211,7 @@ export default async function Home() {
               <input type="email" placeholder="Seu melhor email" className="w-full p-2 rounded bg-background border border-border text-sm mb-2 text-white placeholder:text-muted-foreground" />
               <Button className="w-full bg-primary text-white">Inscrever-se</Button>
            </div>
+
         </div>
       </div>
     </div>
