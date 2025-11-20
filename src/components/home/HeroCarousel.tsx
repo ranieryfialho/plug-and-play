@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 
 interface HeroCarouselProps {
@@ -15,14 +13,13 @@ interface HeroCarouselProps {
 export default function HeroCarousel({ posts }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Rotação Automática a cada 5 segundos
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % posts.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [posts.length]);
+  }, [currentIndex, posts.length]);
 
   if (!posts || posts.length === 0) return null;
 
@@ -41,7 +38,7 @@ export default function HeroCarousel({ posts }: HeroCarouselProps) {
             transition={{ duration: 0.5 }}
             className="absolute inset-0 w-full h-full"
           >
-            <Link href={`/reviews/${activePost.slug}`} className="block w-full h-full">
+            <Link href={activePost.camposDoReview ? `/reviews/${activePost.slug}` : `/artigos/${activePost.slug}`} className="block w-full h-full">
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
               {activePost.featuredImage?.node?.sourceUrl ? (
                 <Image
@@ -70,7 +67,7 @@ export default function HeroCarousel({ posts }: HeroCarouselProps) {
                 </h2>
                 <div 
                   className="text-gray-200 line-clamp-2 text-sm md:text-base font-medium drop-shadow-md hidden md:block"
-                  dangerouslySetInnerHTML={{ __html: activePost.excerpt || activePost.content.slice(0, 120) + "..." }}
+                  dangerouslySetInnerHTML={{ __html: activePost.excerpt || activePost.content?.slice(0, 120) + "..." || "" }}
                 />
               </div>
             </Link>
@@ -104,7 +101,6 @@ export default function HeroCarousel({ posts }: HeroCarouselProps) {
                     />
                   )}
 
-                  {/* Thumb Pequena */}
                   <div className="relative w-16 h-12 shrink-0 rounded overflow-hidden bg-secondary">
                     {post.featuredImage?.node?.sourceUrl && (
                       <Image
@@ -116,7 +112,6 @@ export default function HeroCarousel({ posts }: HeroCarouselProps) {
                     )}
                   </div>
 
-                  {/* Texto */}
                   <div className="flex flex-col min-w-0">
                     <span className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
                        {post.categories?.nodes?.[0]?.name || "Geral"}
