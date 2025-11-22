@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Star, CheckCircle2, XCircle, ShoppingCart, Calendar, User, Tag, Facebook, ExternalLink } from "lucide-react";
+import { Star, CheckCircle2, XCircle, ShoppingCart, Calendar, User, Tag, Facebook, ExternalLink, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -24,7 +24,7 @@ const PAGE_QUERY = `
     reviews(where: { name: $slug }) {
       nodes {
         id
-        databaseId # <--- IMPORTANTE: ID Numérico para comentários
+        databaseId
         title
         content
         excerpt
@@ -50,7 +50,6 @@ const PAGE_QUERY = `
           precoAtual
           resumoVeredito
         }
-        # Comentários
         comments(first: 50, where: { orderby: COMMENT_DATE, order: ASC }) {
           nodes {
             id
@@ -66,7 +65,6 @@ const PAGE_QUERY = `
         }
       }
     }
-    # Sidebar: Mais Recentes
     recents: reviews(first: 5, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
         id, title, slug, date
@@ -80,6 +78,15 @@ function getExcerpt(html: string, limit = 150) {
   if (!html) return "";
   const text = html.replace(/<[^>]*>?/gm, ''); 
   return text.slice(0, limit) + (text.length > limit ? "..." : "");
+}
+
+function formatDate(dateString: string) {
+  try {
+    if (!dateString) return "Data desconhecida";
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ptBR });
+  } catch (error) {
+    return "Recentemente";
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -139,17 +146,15 @@ export default async function ReviewPage({ params }: { params: Promise<{ slug: s
   else if (authorName === 'Raniery Fialho') authorRole = 'Administrador';
 
   const currentUrl = `https://plugnplaytech.com.br/reviews/${slug}`; 
-  const shareText = encodeURIComponent(post.title);
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`,
-    twitter: `https://twitter.com/intent/tweet?url=${currentUrl}&text=${shareText}`,
-    whatsapp: `https://api.whatsapp.com/send?text=${shareText}%20${currentUrl}`
+    twitter: `https://twitter.com/intent/tweet?url=${currentUrl}&text=${encodeURIComponent(post.title)}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(post.title)}%20${currentUrl}`
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       
-      {/* --- HEADER EDITORIAL --- */}
       <div className="container mx-auto px-6 pt-8 pb-6 max-w-6xl">
         <div className="flex gap-2 mb-4">
           {post.categories?.nodes?.map((cat: any) => (
@@ -177,7 +182,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ slug: s
                     Por <span className="text-primary font-bold">{authorName}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                     {formatDistanceToNow(new Date(post.date), { addSuffix: true, locale: ptBR })}
+                     {formatDate(post.date)}
                   </div>
               </div>
            </div>
@@ -324,7 +329,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ slug: s
                             {recent.title}
                           </h5>
                           <span className="text-[10px] text-muted-foreground">
-                            {formatDistanceToNow(new Date(recent.date), { addSuffix: true, locale: ptBR })}
+                            {formatDate(recent.date)}
                           </span>
                        </div>
                     </Link>

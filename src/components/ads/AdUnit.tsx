@@ -23,6 +23,8 @@ export default function AdUnit({ slotId, format = "auto", style, className = "h-
 
   const isDev = process.env.NODE_ENV === "development";
 
+  const AD_CLIENT_ID = "ca-pub-6203949560211327"; 
+
   return (
     <div className={`block w-full my-8 overflow-hidden rounded-xl ${className}`} style={style}>
       {/* Simulação Visual (Localhost) */}
@@ -37,7 +39,7 @@ export default function AdUnit({ slotId, format = "auto", style, className = "h-
       <ins
         className={`adsbygoogle ${isDev ? "hidden" : "block"}`}
         style={{ display: "block", width: "100%", height: "100%" }}
-        data-ad-client="ca-pub-6203949560211327" 
+        data-ad-client={AD_CLIENT_ID}
         data-ad-slot={slotId}
         data-ad-format={format}
         data-full-width-responsive="true"
