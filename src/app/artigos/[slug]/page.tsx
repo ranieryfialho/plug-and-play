@@ -200,7 +200,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     <div className="text-center mb-6">
                       <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">A partir de</p>
                       <span className="text-3xl font-black text-white block tracking-tight">
-                        R${post.camposDoReview.precoAtual || "Oferta"}
+                        R$ {post.camposDoReview.precoAtual || "Oferta"}
                       </span>
                     </div>
 
