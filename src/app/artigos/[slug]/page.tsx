@@ -90,7 +90,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   return (
     <div className="min-h-screen bg-background pb-20">
       
-      {/* --- CABEÇALHO DO ARTIGO --- */}
       <div className="container mx-auto px-6 pt-12 pb-6 max-w-4xl">
         <div className="flex gap-2 mb-6">
             {post.categories?.nodes?.map((cat: any) => (
@@ -127,7 +126,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </Button>
         </div>
 
-        {/* Imagem Principal */}
         {post.featuredImage?.node?.sourceUrl && (
           <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-12 border border-border shadow-lg">
              <Image 
@@ -141,13 +139,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
       </div>
 
-      {/* --- CORPO DO TEXTO + SIDEBAR --- */}
       <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-6xl">
         
-        {/* Coluna Esquerda: Texto */}
         <div className="lg:col-span-8">
           
-          {/* FAIXA DE OFERTA (Topo do Texto) */}
           {post.camposDoReview?.linkDeAfiliadoMlolx && (
             <div className="mb-10 bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md hover:border-primary/40 transition-colors group">
                <div className="flex items-center gap-4">
@@ -178,14 +173,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           />
         </div>
 
-        {/* Coluna Direita: Sidebar */}
         <div className="lg:col-span-4 space-y-8">
            
-           {/* --- CARD DE OFERTA MELHORADO (SIDEBAR) --- */}
            {post.camposDoReview?.linkDeAfiliadoMlolx && (
              <div className="sticky top-24 z-10">
                 <Card className="bg-card border-border p-6 shadow-2xl shadow-primary/5 overflow-hidden relative group">
-                  {/* Efeito de fundo sutil */}
                   <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-50 pointer-events-none" />
                   
                   <div className="relative z-10">
@@ -194,7 +186,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                        Oportunidade
                     </h3>
 
-                    {/* Mini Imagem do Produto */}
                     {post.featuredImage?.node?.sourceUrl && (
                       <div className="relative w-full h-32 mb-4 rounded-lg overflow-hidden bg-white/5 border border-white/10">
                          <Image 
@@ -209,7 +200,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     <div className="text-center mb-6">
                       <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">A partir de</p>
                       <span className="text-3xl font-black text-white block tracking-tight">
-                        {post.camposDoReview.precoAtual || "Oferta"}
+                        R${post.camposDoReview.precoAtual || "Oferta"}
                       </span>
                     </div>
 
