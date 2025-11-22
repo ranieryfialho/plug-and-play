@@ -9,11 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import AdUnit from "@/components/ads/AdUnit";
+import CommentsSection from "@/components/comments/CommentsSection";
 import { Metadata } from "next";
 
 const POST_QUERY = `
   query GetPostBySlug($slug: ID!) {
     post(id: $slug, idType: SLUG) {
+      id
+      databaseId
       title
       content
       excerpt
@@ -40,6 +43,22 @@ const POST_QUERY = `
       camposDoReview {
         precoAtual
         linkDeAfiliadoMlolx
+      }
+      # Busca comentários aprovados
+      comments(first: 50, where: { orderby: COMMENT_DATE, order: ASC }) {
+        nodes {
+          id
+          content
+          date
+          author {
+            node {
+              name
+              avatar {
+                url
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -86,6 +105,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const post = data.post;
   const authorName = post.author?.node?.name || 'Redação';
   const authorAvatarUrl = post.author?.node?.avatar?.url;
+  const comments = post.comments?.nodes || [];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -152,7 +172,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   <div>
                     <p className="text-sm text-muted-foreground font-medium">Produto mencionado</p>
                     <p className="text-2xl font-bold text-white">
-                       R$ {post.camposDoReview.precoAtual || "Ver Oferta"}
+                       {post.camposDoReview.precoAtual || "Ver Oferta"}
                     </p>
                   </div>
                </div>
@@ -171,51 +191,32 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             prose-ul:text-gray-300 prose-li:marker:text-primary"
             dangerouslySetInnerHTML={{ __html: post.content || '' }} 
           />
+
+          <CommentsSection 
+            postId={post.databaseId} 
+            comments={comments} 
+            path={`/artigos/${slug}`} 
+          />
+          
         </div>
 
         <div className="lg:col-span-4 space-y-8">
            
            {post.camposDoReview?.linkDeAfiliadoMlolx && (
              <div className="sticky top-24 z-10">
-                <Card className="bg-card border-border p-6 shadow-2xl shadow-primary/5 overflow-hidden relative group">
-                  <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-50 pointer-events-none" />
-                  
-                  <div className="relative z-10">
-                    <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                       <Tag className="w-4 h-4 text-primary" />
-                       Oportunidade
-                    </h3>
-
-                    {post.featuredImage?.node?.sourceUrl && (
-                      <div className="relative w-full h-32 mb-4 rounded-lg overflow-hidden bg-white/5 border border-white/10">
-                         <Image 
-                           src={post.featuredImage.node.sourceUrl} 
-                           alt="Produto" 
-                           fill 
-                           className="object-contain p-2"
-                         />
-                      </div>
-                    )}
-
-                    <div className="text-center mb-6">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">A partir de</p>
-                      <span className="text-3xl font-black text-white block tracking-tight">
-                        R$ {post.camposDoReview.precoAtual || "Oferta"}
-                      </span>
-                    </div>
-
-                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 shadow-lg shadow-green-900/20 transition-all hover:scale-[1.02]" asChild>
-                      <a href={post.camposDoReview.linkDeAfiliadoMlolx} target="_blank" rel="noopener noreferrer">
-                        <ShoppingCart className="mr-2 h-5 w-5" />
-                        Comprar Agora
-                      </a>
-                    </Button>
-                    
-                    <div className="mt-3 flex items-center justify-center gap-1 text-[10px] text-muted-foreground opacity-70">
-                      <ExternalLink className="w-3 h-3" />
-                      Link seguro de parceiro
-                    </div>
+                <Card className="bg-card border-border p-6 shadow-lg mb-8">
+                  <h3 className="font-bold text-white mb-4">Interessou?</h3>
+                  <div className="text-center mb-6">
+                    <span className="text-3xl font-bold text-white block mb-1">
+                      {post.camposDoReview.precoAtual || "Oferta"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">Melhor preço encontrado</span>
                   </div>
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold" asChild>
+                    <a href={post.camposDoReview.linkDeAfiliadoMlolx} target="_blank" rel="noopener noreferrer">
+                      Comprar Agora
+                    </a>
+                  </Button>
                 </Card>
              </div>
            )}
