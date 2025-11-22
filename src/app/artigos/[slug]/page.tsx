@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar, User, ArrowLeft, Tag, Share2, ShoppingCart } from "lucide-react";
+import { Calendar, User, ArrowLeft, Tag, Share2, ShoppingCart, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,7 +37,6 @@ const POST_QUERY = `
           slug
         }
       }
-      # Campos do ACF (Mesmo nome do review)
       camposDoReview {
         precoAtual
         linkDeAfiliadoMlolx
@@ -91,11 +90,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   return (
     <div className="min-h-screen bg-background pb-20">
       
+      {/* --- CABEÇALHO DO ARTIGO --- */}
       <div className="container mx-auto px-6 pt-12 pb-6 max-w-4xl">
-        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8 transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Home
-        </Link>
-
         <div className="flex gap-2 mb-6">
             {post.categories?.nodes?.map((cat: any) => (
             <Link key={cat.slug} href={`/category/${cat.slug}`}>
@@ -131,8 +127,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </Button>
         </div>
 
+        {/* Imagem Principal */}
         {post.featuredImage?.node?.sourceUrl && (
-          <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-8 border border-border shadow-lg">
+          <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-12 border border-border shadow-lg">
              <Image 
                src={post.featuredImage.node.sourceUrl} 
                alt={post.title} 
@@ -144,10 +141,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
       </div>
 
+      {/* --- CORPO DO TEXTO + SIDEBAR --- */}
       <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-6xl">
         
+        {/* Coluna Esquerda: Texto */}
         <div className="lg:col-span-8">
           
+          {/* FAIXA DE OFERTA (Topo do Texto) */}
           {post.camposDoReview?.linkDeAfiliadoMlolx && (
             <div className="mb-10 bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md hover:border-primary/40 transition-colors group">
                <div className="flex items-center gap-4">
@@ -178,23 +178,53 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           />
         </div>
 
+        {/* Coluna Direita: Sidebar */}
         <div className="lg:col-span-4 space-y-8">
            
+           {/* --- CARD DE OFERTA MELHORADO (SIDEBAR) --- */}
            {post.camposDoReview?.linkDeAfiliadoMlolx && (
              <div className="sticky top-24 z-10">
-                <Card className="bg-card border-border p-6 shadow-lg mb-8">
-                  <h3 className="font-bold text-white mb-4">Gostou do produto?</h3>
-                  <div className="text-center mb-6">
-                    <span className="text-3xl font-bold text-white block mb-1">
-                      {post.camposDoReview.precoAtual || "Oferta"}
-                    </span>
-                    <span className="text-xs text-muted-foreground">Melhor preço encontrado</span>
+                <Card className="bg-card border-border p-6 shadow-2xl shadow-primary/5 overflow-hidden relative group">
+                  {/* Efeito de fundo sutil */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-50 pointer-events-none" />
+                  
+                  <div className="relative z-10">
+                    <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                       <Tag className="w-4 h-4 text-primary" />
+                       Oportunidade
+                    </h3>
+
+                    {/* Mini Imagem do Produto */}
+                    {post.featuredImage?.node?.sourceUrl && (
+                      <div className="relative w-full h-32 mb-4 rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                         <Image 
+                           src={post.featuredImage.node.sourceUrl} 
+                           alt="Produto" 
+                           fill 
+                           className="object-contain p-2"
+                         />
+                      </div>
+                    )}
+
+                    <div className="text-center mb-6">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">A partir de</p>
+                      <span className="text-3xl font-black text-white block tracking-tight">
+                        {post.camposDoReview.precoAtual || "Oferta"}
+                      </span>
+                    </div>
+
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 shadow-lg shadow-green-900/20 transition-all hover:scale-[1.02]" asChild>
+                      <a href={post.camposDoReview.linkDeAfiliadoMlolx} target="_blank" rel="noopener noreferrer">
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        Comprar Agora
+                      </a>
+                    </Button>
+                    
+                    <div className="mt-3 flex items-center justify-center gap-1 text-[10px] text-muted-foreground opacity-70">
+                      <ExternalLink className="w-3 h-3" />
+                      Link seguro de parceiro
+                    </div>
                   </div>
-                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold" asChild>
-                    <a href={post.camposDoReview.linkDeAfiliadoMlolx} target="_blank" rel="noopener noreferrer">
-                      Comprar Agora
-                    </a>
-                  </Button>
                 </Card>
              </div>
            )}
