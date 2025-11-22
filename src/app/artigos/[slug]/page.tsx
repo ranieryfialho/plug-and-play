@@ -192,7 +192,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   <div>
                     <p className="text-sm text-muted-foreground font-medium">Produto mencionado</p>
                     <p className="text-2xl font-bold text-white">
-                       {post.camposDoReview.precoAtual || "Ver Oferta"}
+                       R$ {post.camposDoReview.precoAtual || "Ver Oferta"}
                     </p>
                   </div>
                </div>
@@ -230,7 +230,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   <h3 className="font-bold text-white mb-4">Interessou?</h3>
                   <div className="text-center mb-6">
                     <span className="text-3xl font-bold text-white block mb-1">
-                      {post.camposDoReview.precoAtual || "Oferta"}
+                      R$ {post.camposDoReview.precoAtual || "Oferta"}
                     </span>
                     <span className="text-xs text-muted-foreground">Melhor preço encontrado</span>
                   </div>

@@ -226,7 +226,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ slug: s
                   <div>
                     <p className="text-sm text-muted-foreground font-medium">Melhor preço encontrado</p>
                     <p className="text-2xl font-bold text-white">
-                       {post.camposDoReview.precoAtual || "Ver Oferta"}
+                       R$ {post.camposDoReview.precoAtual || "Ver Oferta"}
                     </p>
                   </div>
                </div>
