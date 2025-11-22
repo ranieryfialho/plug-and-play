@@ -152,7 +152,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                   <div>
                     <p className="text-sm text-muted-foreground font-medium">Produto mencionado</p>
                     <p className="text-2xl font-bold text-white">
-                       {post.camposDoReview.precoAtual || "Ver Oferta"}
+                       R$ {post.camposDoReview.precoAtual || "Ver Oferta"}
                     </p>
                   </div>
                </div>
