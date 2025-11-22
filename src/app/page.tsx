@@ -13,12 +13,18 @@ import Image from "next/image";
 import HeroTitle from "@/components/ui/hero-title";
 import HeroCarousel from "@/components/home/HeroCarousel";
 
+function getExcerpt(html: string, limit = 150) {
+  if (!html) return "";
+  const text = html.replace(/<[^>]*>?/gm, ''); 
+  return text.slice(0, limit) + (text.length > limit ? "..." : "");
+}
+
 const PORTAL_QUERY = `
   query PortalData {
-    # 1. Reviews (Trazemos bastante para alimentar as seções)
+    # 1. Reviews
     reviews(first: 50, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
-        id, title, slug, date, content, excerpt
+        id, title, slug, date, content
         featuredImage { node { sourceUrl } }
         categories { nodes { name, slug } }
         camposDoReview { notaDoReview, precoAtual }
@@ -28,7 +34,7 @@ const PORTAL_QUERY = `
     # 2. Posts (Notícias)
     posts(first: 50, where: { orderby: { field: DATE, order: DESC } }) {
       nodes {
-        id, title, slug, date, content, excerpt
+        id, title, slug, date, content
         featuredImage { node { sourceUrl } }
         categories { nodes { name, slug } }
       }
@@ -52,6 +58,7 @@ export default async function Home() {
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+
   const carouselPosts = allContent.slice(0, 5);
 
   const ofertasPosts = reviews.filter((post: any) => 
@@ -62,7 +69,7 @@ export default async function Home() {
     post.categories?.nodes?.some((cat: any) => cat.slug === 'games')
   ).slice(0, 5);
 
-  const celularesPosts = reviews.filter((post: any) => 
+  const celularesPosts = allContent.filter((post: any) => 
     post.categories?.nodes?.some((cat: any) => cat.slug === 'celulares' || cat.slug === 'smartphones')
   ).slice(0, 4);
 
@@ -138,8 +145,7 @@ export default async function Home() {
              ) : (
                <div className="p-6 border border-dashed border-border rounded-xl text-center text-muted-foreground bg-card/30">
                  <Smartphone className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                 <p>Nenhum review de celular encontrado.</p>
-                 <p className="text-xs mt-1">Verifique a categoria 'celulares' no WordPress.</p>
+                 <p>Nenhum conteúdo de celular encontrado.</p>
                </div>
              )}
           </section>
@@ -202,7 +208,6 @@ export default async function Home() {
            </div>
 
            <div>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground block text-center mb-2">Publicidade</span>
               <AdUnit slotId="home-sidebar" format="rectangle" className="w-full h-[600px]" />
            </div>
 
@@ -211,7 +216,6 @@ export default async function Home() {
               <input type="email" placeholder="Seu melhor email" className="w-full p-2 rounded bg-background border border-border text-sm mb-2 text-white placeholder:text-muted-foreground" />
               <Button className="w-full bg-primary text-white">Inscrever-se</Button>
            </div>
-
         </div>
       </div>
     </div>
