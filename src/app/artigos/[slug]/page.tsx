@@ -4,18 +4,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar, User, ArrowLeft, Tag, Share2 } from "lucide-react";
+import { Calendar, User, ArrowLeft, Tag, Share2, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import AdUnit from "@/components/ads/AdUnit";
 import { Metadata } from "next";
-import { Button } from "@/components/ui/button";
 
-// QUERY: Busca um POST padrão (Notícia/Artigo), não um Review
 const POST_QUERY = `
   query GetPostBySlug($slug: ID!) {
     post(id: $slug, idType: SLUG) {
       title
       content
+      excerpt
       date
       author {
         node {
@@ -36,17 +37,20 @@ const POST_QUERY = `
           slug
         }
       }
+      # Campos do ACF (Mesmo nome do review)
+      camposDoReview {
+        precoAtual
+        linkDeAfiliadoMlolx
+      }
     }
   }
 `;
 
-// Função auxiliar para limpar HTML (SEO)
 function stripHtml(html: string) {
   if (!html) return "";
   return html.replace(/<[^>]*>?/gm, '');
 }
 
-// SEO Dinâmico
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchAPI(POST_QUERY, { slug });
@@ -54,9 +58,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   if (!post) return { title: "Artigo não encontrado" };
 
-  const cleanDescription = post.content 
-    ? stripHtml(post.content).slice(0, 160) + "..." 
-    : `Leia mais sobre ${post.title} no Plug & Play.`;
+  const cleanDescription = post.excerpt 
+    ? stripHtml(post.excerpt).slice(0, 160) 
+    : stripHtml(post.content).slice(0, 160) + "...";
 
   const ogImage = post.featuredImage?.node?.sourceUrl || "/og-default.jpg";
 
@@ -87,8 +91,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   return (
     <div className="min-h-screen bg-background pb-20">
       
-      {/* --- CABEÇALHO DO ARTIGO --- */}
-      <div className="container mx-auto px-6 pt-12 pb-8 max-w-4xl">
+      <div className="container mx-auto px-6 pt-12 pb-6 max-w-4xl">
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Home
         </Link>
@@ -109,10 +112,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
         <div className="flex items-center justify-between border-b border-border pb-6 mb-8">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-secondary/50 overflow-hidden relative border border-border">
+            <div className="h-10 w-10 rounded-full bg-secondary/50 overflow-hidden relative border border-border flex items-center justify-center">
                 {authorAvatarUrl ? (
                      <Image src={authorAvatarUrl} alt={authorName} fill className="object-cover" />
-                ) : <User className="w-5 h-5 text-primary m-auto" />}
+                ) : <User className="w-5 h-5 text-primary" />}
             </div>
             <div className="flex flex-col">
                 <span className="font-medium text-white text-sm">{authorName}</span>
@@ -128,9 +131,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </Button>
         </div>
 
-        {/* Imagem Principal */}
         {post.featuredImage?.node?.sourceUrl && (
-          <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-12 border border-border shadow-lg">
+          <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-8 border border-border shadow-lg">
              <Image 
                src={post.featuredImage.node.sourceUrl} 
                alt={post.title} 
@@ -142,11 +144,32 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
       </div>
 
-      {/* --- CORPO DO TEXTO + SIDEBAR --- */}
       <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-6xl">
         
-        {/* Coluna Esquerda: Texto */}
         <div className="lg:col-span-8">
+          
+          {post.camposDoReview?.linkDeAfiliadoMlolx && (
+            <div className="mb-10 bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md hover:border-primary/40 transition-colors group">
+               <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
+                    <Tag className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Produto mencionado</p>
+                    <p className="text-2xl font-bold text-white">
+                       {post.camposDoReview.precoAtual || "Ver Oferta"}
+                    </p>
+                  </div>
+               </div>
+               <Button asChild className="w-full sm:w-auto bg-primary hover:bg-secondary text-white font-bold shadow-[0_0_15px_rgba(124,58,237,0.4)] cursor-pointer">
+                  <a href={post.camposDoReview.linkDeAfiliadoMlolx} target="_blank" rel="noopener noreferrer">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Ver na Loja
+                  </a>
+               </Button>
+            </div>
+          )}
+
           <article 
             className="prose prose-invert prose-lg max-w-none 
             prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-a:text-primary hover:prose-a:text-accent
@@ -155,10 +178,28 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           />
         </div>
 
-        {/* Coluna Direita: Sidebar Simples */}
         <div className="lg:col-span-4 space-y-8">
-           {/* Anúncio Lateral */}
-           <div className="w-full sticky top-24">
+           
+           {post.camposDoReview?.linkDeAfiliadoMlolx && (
+             <div className="sticky top-24 z-10">
+                <Card className="bg-card border-border p-6 shadow-lg mb-8">
+                  <h3 className="font-bold text-white mb-4">Gostou do produto?</h3>
+                  <div className="text-center mb-6">
+                    <span className="text-3xl font-bold text-white block mb-1">
+                      {post.camposDoReview.precoAtual || "Oferta"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">Melhor preço encontrado</span>
+                  </div>
+                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold" asChild>
+                    <a href={post.camposDoReview.linkDeAfiliadoMlolx} target="_blank" rel="noopener noreferrer">
+                      Comprar Agora
+                    </a>
+                  </Button>
+                </Card>
+             </div>
+           )}
+
+           <div className="w-full">
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2 block text-center opacity-50">
                 Publicidade
               </span>
