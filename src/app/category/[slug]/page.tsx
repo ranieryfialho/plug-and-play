@@ -1,15 +1,11 @@
 import { fetchAPI } from "@/services/wordpress";
-import ReviewCard from "@/components/reviews/ReviewCard"; // Usaremos o mesmo card por enquanto
-import HorizontalCard from "@/components/reviews/HorizontalCard"; // Ou um card mais simples para notícias
 import { notFound } from "next/navigation";
 import { FolderOpen, Newspaper } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { dateToNow } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
-// QUERY HÍBRIDA: Busca a categoria e TUDO que tem nela (Reviews + Posts)
 const CATEGORY_QUERY = `
   query GetCategoryData($slug: ID!) {
     category(id: $slug, idType: SLUG) {
@@ -44,17 +40,14 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   const { name, description, reviews, posts } = data.category;
   
-  // Juntamos Reviews e Posts numa lista só
   const allContent = [...(reviews?.nodes || []), ...(posts?.nodes || [])];
   
-  // Ordenamos por data
   allContent.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="min-h-screen bg-background pb-20 pt-12">
       <div className="container mx-auto px-6">
         
-        {/* Header da Categoria */}
         <div className="flex flex-col items-center text-center mb-16 border-b border-border pb-12">
           <div className="inline-flex items-center justify-center p-4 bg-card border border-border rounded-2xl mb-6 shadow-lg shadow-primary/5">
             <FolderOpen className="w-8 h-8 text-primary" />
@@ -67,11 +60,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           </p>
         </div>
 
-        {/* Lista de Conteúdo */}
         {allContent.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {allContent.map((item: any) => {
-              // Lógica para saber se é Review ou Artigo
               const isReview = !!item.camposDoReview;
               const link = isReview ? `/reviews/${item.slug}` : `/artigos/${item.slug}`;
 
@@ -86,7 +77,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                            <div className="flex items-center justify-center h-full text-muted-foreground"><Newspaper className="w-8 h-8 opacity-20"/></div>
                          )}
                          
-                         {/* Badge de Tipo */}
                          <div className="absolute top-3 right-3">
                             {isReview ? (
                               <Badge className="bg-yellow-500 text-black font-bold hover:bg-yellow-600">Review {item.camposDoReview.notaDoReview}</Badge>
@@ -96,10 +86,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
                          </div>
                       </div>
 
-                      {/* Texto */}
                       <div className="p-6">
                          <span className="text-xs text-muted-foreground mb-2 block">
-                           {formatDistanceToNow(new Date(item.date), { addSuffix: true, locale: ptBR })}
+                           {dateToNow(item.date)}
                          </span>
                          <h3 className="text-xl font-bold text-white leading-snug mb-2 group-hover:text-primary transition-colors">
                            {item.title}

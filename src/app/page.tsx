@@ -1,23 +1,15 @@
 import { fetchAPI } from "@/services/wordpress";
 import Link from "next/link";
-import { Zap, Gamepad2, Smartphone, Newspaper } from "lucide-react";
+import { Zap, Smartphone, Newspaper } from "lucide-react";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import ProductCard from "@/components/reviews/ProductCard";
 import HorizontalCard from "@/components/reviews/HorizontalCard";
 import SectionHeader from "@/components/ui/section-header";
 import AdUnit from "@/components/ads/AdUnit";
 import { Button } from "@/components/ui/button";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import Image from "next/image";
+import { dateToNow } from "@/lib/utils";
 import HeroTitle from "@/components/ui/hero-title";
 import HeroCarousel from "@/components/home/HeroCarousel";
-
-function getExcerpt(html: string, limit = 150) {
-  if (!html) return "";
-  const text = html.replace(/<[^>]*>?/gm, ''); 
-  return text.slice(0, limit) + (text.length > limit ? "..." : "");
-}
 
 const PORTAL_QUERY = `
   query PortalData {
@@ -186,7 +178,7 @@ export default async function Home() {
                             {item.title}
                           </h5>
                           <span className="text-[10px] text-muted-foreground mt-1 block">
-                            {formatDistanceToNow(new Date(item.date), { addSuffix: true, locale: ptBR })}
+                            {dateToNow(item.date)}
                           </span>
                        </div>
                     </Link>

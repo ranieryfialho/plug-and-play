@@ -2,9 +2,8 @@ import { fetchAPI } from "@/services/wordpress";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Calendar, User, ArrowLeft, Tag, Share2, ShoppingCart, ExternalLink, Facebook } from "lucide-react";
+import { dateToNow } from "@/lib/utils";
+import { Calendar, User, Tag, Share2, ShoppingCart, Facebook } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -151,7 +150,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <span className="font-medium text-white text-sm">{authorName}</span>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />
-                    <span>{formatDistanceToNow(new Date(post.date), { addSuffix: true, locale: ptBR })}</span>
+                    <span>{dateToNow(post.date)}</span>
                 </div>
             </div>
           </div>
@@ -176,13 +175,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         )}
       </div>
 
-      {/* --- CORPO DO TEXTO + SIDEBAR --- */}
       <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-6xl">
         
-        {/* Coluna Esquerda: Texto + Comentários */}
         <div className="lg:col-span-8">
           
-          {/* FAIXA DE OFERTA */}
           {post.camposDoReview?.linkDeAfiliadoMlolx && (
             <div className="mb-10 bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md hover:border-primary/40 transition-colors group">
                <div className="flex items-center gap-4">
@@ -212,7 +208,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             dangerouslySetInnerHTML={{ __html: post.content || '' }} 
           />
 
-          {/* --- SEÇÃO DE COMENTÁRIOS NATIVOS --- */}
           <CommentsSection 
             postId={post.databaseId} 
             comments={comments} 
@@ -221,7 +216,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           
         </div>
 
-        {/* Coluna Direita: Sidebar */}
         <div className="lg:col-span-4 space-y-8">
            
            {post.camposDoReview?.linkDeAfiliadoMlolx && (

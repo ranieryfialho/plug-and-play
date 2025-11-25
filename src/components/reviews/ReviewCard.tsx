@@ -3,9 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Star, Calendar, Newspaper } from "lucide-react"; // Adicionei Newspaper
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Star, Calendar, Newspaper } from "lucide-react"; 
+import { dateToNow } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
@@ -65,10 +64,7 @@ export default function ReviewCard({ post }: ReviewCardProps) {
           <CardHeader className="p-5 pb-2">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2 font-medium">
               <Calendar className="w-3.5 h-3.5" />
-              {formatDistanceToNow(new Date(post.date), {
-                addSuffix: true,
-                locale: ptBR,
-              })}
+              {dateToNow(post.date)}
             </div>
             <h3 className="font-bold text-lg text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">
               {post.title}

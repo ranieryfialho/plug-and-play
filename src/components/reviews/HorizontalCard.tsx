@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { dateToNow } from "@/lib/utils";
 import { Zap } from "lucide-react";
 
 export default function HorizontalCard({ post }: { post: any }) {
@@ -32,7 +31,7 @@ export default function HorizontalCard({ post }: { post: any }) {
           {post.title}
         </h3>
         <span className="text-[10px] text-muted-foreground">
-          {formatDistanceToNow(new Date(post.date), { addSuffix: true, locale: ptBR })}
+          {dateToNow(post.date)}
         </span>
       </div>
     </Link>

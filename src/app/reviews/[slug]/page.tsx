@@ -2,9 +2,8 @@ import { fetchAPI } from "@/services/wordpress";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Star, CheckCircle2, XCircle, ShoppingCart, Calendar, User, Tag, Facebook, ExternalLink, Zap } from "lucide-react";
+import { dateToNow } from "@/lib/utils";
+import { Star, CheckCircle2, XCircle, ShoppingCart, User, Tag, Facebook, ExternalLink, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -78,15 +77,6 @@ function getExcerpt(html: string, limit = 150) {
   if (!html) return "";
   const text = html.replace(/<[^>]*>?/gm, ''); 
   return text.slice(0, limit) + (text.length > limit ? "..." : "");
-}
-
-function formatDate(dateString: string) {
-  try {
-    if (!dateString) return "Data desconhecida";
-    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ptBR });
-  } catch (error) {
-    return "Recentemente";
-  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -182,7 +172,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ slug: s
                     Por <span className="text-primary font-bold">{authorName}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                     {formatDate(post.date)}
+                     {dateToNow(post.date)}
                   </div>
               </div>
            </div>
@@ -329,7 +319,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ slug: s
                             {recent.title}
                           </h5>
                           <span className="text-[10px] text-muted-foreground">
-                            {formatDate(recent.date)}
+                            {dateToNow(recent.date)}
                           </span>
                        </div>
                     </Link>

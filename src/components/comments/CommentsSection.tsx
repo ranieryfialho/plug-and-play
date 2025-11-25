@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { User, MessageSquare } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { dateToNow } from "@/lib/utils";
 import { submitComment } from "@/app/actions";
 
 export default function CommentsSection({ postId, comments, path }: { postId: number, comments: any[], path: string }) {
@@ -46,7 +45,7 @@ export default function CommentsSection({ postId, comments, path }: { postId: nu
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-bold text-white text-sm">{comment.author?.node?.name || "Anônimo"}</span>
                   <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.date), { addSuffix: true, locale: ptBR })}
+                    {dateToNow(comment.date)}
                   </span>
                 </div>
                 <div 
