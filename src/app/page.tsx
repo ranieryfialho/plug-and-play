@@ -91,7 +91,7 @@ export default async function Home() {
 
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button asChild size="lg" className="w-full sm:w-auto bg-primary hover:bg-secondary text-white font-semibold shadow-[0_0_20px_rgba(124,58,237,0.3)] h-12 px-8 rounded-full cursor-pointer">
-               <Link href="/category/reviews">Explorar Artigos</Link>
+               <Link href="/explorar">Explorar Artigos</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-white/10 bg-white/5 text-white hover:bg-white/10 h-12 px-8 rounded-full backdrop-blur-sm cursor-pointer">
                <Link href="/sobre">Quem somos</Link>
