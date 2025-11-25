@@ -10,10 +10,9 @@ export function cn(...inputs: ClassValue[]) {
 export function dateToNow(dateString: string) {
   if (!dateString) return "";
 
-  let dateToParse = dateString;
-  
-  if (!dateString.includes("Z") && !dateString.includes("+") && !dateString.match(/-\d{2}:\d{2}$/)) {
-     dateToParse = `${dateString}-03:00`;
+  let dateToParse = dateString.replace(' ', 'T');
+  if (!dateToParse.includes("Z") && !dateToParse.includes("+") && !dateToParse.match(/-\d{2}:\d{2}$/)) {
+     dateToParse = `${dateToParse}Z`;
   }
 
   try {
