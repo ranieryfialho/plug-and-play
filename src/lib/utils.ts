@@ -11,8 +11,9 @@ export function dateToNow(dateString: string) {
   if (!dateString) return "";
 
   let dateToParse = dateString.replace(' ', 'T');
+
   if (!dateToParse.includes("Z") && !dateToParse.includes("+") && !dateToParse.match(/-\d{2}:\d{2}$/)) {
-     dateToParse = `${dateToParse}Z`;
+     dateToParse = `${dateToParse}-03:00`;
   }
 
   try {
