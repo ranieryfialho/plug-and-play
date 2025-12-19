@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Plug & Play - Hub de Tecnologia (Headless CMS)
 
-## Getting Started
+O **Plug & Play** é um portal moderno de notícias, reviews e análises de tecnologia. O projeto utiliza uma arquitetura **Headless**, onde o WordPress atua como o sistema de gestão de conteúdos (CMS) e o Next.js como o motor de renderização de alto desempenho.
 
-First, run the development server:
+## 🚀 Tecnologias Utilizadas
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Este projeto foi construído com as versões mais recentes das principais stacks do mercado:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+* **Framework:** [Next.js 15+](https://nextjs.org/) (App Router).
+* **Biblioteca de UI:** [React 19](https://react.dev/).
+* **Estilização:** [Tailwind CSS](https://tailwindcss.com/) com suporte a `typography`.
+* **CMS (Backend):** [WordPress](https://wordpress.org/) (Headless).
+* **API:** [GraphQL](https://graphql.org/) via WPGraphQL.
+* **Animações:** [Framer Motion](https://www.framer.com/motion/).
+* **Ícones:** [Lucide React](https://lucide.dev/).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Arquitetura do Projeto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O projeto foca em performance e SEO, utilizando **Server Components** para buscar dados diretamente do WordPress:
 
-## Learn More
+1.  **WordPress (Headless):** Armazena Posts, Reviews e Categorias.
+2.  **GraphQL API:** Serve como a ponte de dados entre o WordPress e o Frontend.
+3.  **Next.js Frontend:** Consome os dados via `fetchAPI` no servidor e renderiza páginas com revalidação (ISR).
 
-To learn more about Next.js, take a look at the following resources:
+## 📡 Implementação GraphQL
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O **GraphQL** é o "tecido conector" deste projeto, permitindo uma comunicação eficiente entre o Next.js e o WordPress.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Por que GraphQL?
+Diferente de uma API REST comum, o GraphQL permite que o frontend solicite exatamente os dados de que precisa em uma única requisição, evitando o *over-fetching* e melhorando drasticamente o tempo de carregamento.
 
-## Deploy on Vercel
+### Como funciona no projeto:
+* **Endpoint Centralizado:** Todas as requisições são feitas para um único endpoint definido em `NEXT_PUBLIC_WORDPRESS_API_URL`.
+* **Serviços de Dados (`src/services/wordpress.ts`):** Centralizamos as queries GraphQL que buscam posts, reviews e categorias, garantindo tipagem e reutilização.
+* **Integração com ACF:** Utilizamos o GraphQL para buscar campos personalizados do *Advanced Custom Fields*, como notas de reviews e especificações técnicas de produtos.
+* **Performance:** As consultas são executadas no lado do servidor (Server-side), permitindo que o Next.js gere o HTML pronto para o usuário e para os motores de busca (SEO).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📂 Estrutura de Pastas Principal
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+src/
+├── app/            # Rotas (Home, Artigos, Reviews, Search, Category)
+├── components/     # Componentes de UI, Ads, Reviews e Layout
+├── lib/            # Utilitários e funções auxiliares
+└── services/       # Lógica de conexão com a API GraphQL (wordpress.ts)
